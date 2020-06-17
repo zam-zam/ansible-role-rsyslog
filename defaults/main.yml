@@ -1,0 +1,53 @@
+## Rainerscript (preferred configuration language, do not use old-style configuration)
+# https://www.rsyslog.com/doc/v8-stable/rainerscript/index.html
+# https://www.rsyslog.com/doc/v8-stable/rainerscript/functions/index.html
+# https://www.rsyslog.com/doc/v8-stable/rainerscript/expressions.html
+# https://www.rsyslog.com/doc/v8-stable/rainerscript/control_structures.html
+# https://www.rsyslog.com/doc/v8-stable/rainerscript/rainerscript_call.html
+
+## Modules
+# https://www.rsyslog.com/doc/v8-stable/configuration/modules/imfile.html#input-parameters
+# https://www.rsyslog.com/doc/v8-stable/configuration/modules/omfwd.html
+
+## Описание
+# modules - список подключаемых модулей rsyslog
+# rulesets - список правил обработки логов. Если после обработки всех правил необходимо продолжить обработку логов, то необходимо вызвать другой ruleset функцией call, например, "call RSYSLOG_DefaultRuleset". (RSYSLOG_DefaultRuleset - это все правила, которые описаны без "обёртывания"" в отдельный ruleset)
+# <ModuleName> (например, imfile) - список правил конкретного модуля. Названия параметров такие же, как в документации модуля, т.к. подставляются в шаблон напрямую
+
+syslog_collector_host: 127.0.0.1
+syslog_collector_port: 514
+syslog_collector_proto: udp
+
+rsyslog_d_settings_default_enabled: true
+
+syslog_d_settings_default:
+  modules:
+    - imfile
+  rulesets:
+    - name: "sendToLogserver"
+      rules: |
+        action(type="omfwd"
+          Target="{{ syslog_collector_host }}"
+          Port="{{ syslog_collector_port }}"
+          Protocol="{{ syslog_collector_proto }}"
+        )
+
+syslog_d_settings:
+  # rulesets:
+  #   - name: "sendToLogserverAndProcessDefaultRuleset"
+  #     rules: |
+  #       action(type="omfwd"
+  #         Target="{{ syslog_collector_host }}"
+  #         Port="{{ syslog_collector_port }}"
+  #         Protocol="{{ syslog_collector_proto }}"
+  #       )
+  #       call RSYSLOG_DefaultRuleset
+  # imfile:
+  #   - File: "/var/log/nginx/*.access.log"
+  #     Tag: "nginx_access:"
+  #     addMetadata: "on"
+  #     Ruleset: "sendToLogserver"
+  #   - File: "/var/log/nginx/*.error.log"
+  #     Tag: "nginx_error:"
+  #     addMetadata: "on"
+  #     Ruleset: "sendToLogserverAndProcessDefaultRuleset"

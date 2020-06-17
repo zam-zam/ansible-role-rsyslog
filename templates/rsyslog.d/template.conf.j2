@@ -1,0 +1,31 @@
+{{ ansible_managed | comment }}
+
+{% if rsyslog_d_settings.modules is defined and rsyslog_d_settings.modules|length %}
+{% for item in rsyslog_d_settings.modules %}
+
+module(load="{{ item }}")
+
+{% endfor %}
+{% endif %}
+
+{% if rsyslog_d_settings.rulesets is defined and rsyslog_d_settings.rulesets|length %}
+{% for item in rsyslog_d_settings.rulesets %}
+
+ruleset(name="{{ item.name }}") {
+{{ item.rules | indent(width=4, indentfirst=True) }}
+}
+
+{% endfor %}
+{% endif %}
+
+{% if rsyslog_d_settings.imfile is defined and rsyslog_d_settings.imfile|length %}
+{% for item in rsyslog_d_settings.imfile %}
+
+input(type="imfile"
+    {% for key, value in item.items() %}
+    {{ key }}="{{ value }}"
+    {% endfor %}
+)
+
+{% endfor %}
+{% endif %}

@@ -1,0 +1,26 @@
+- name: Install rsyslog package
+  yum:
+    name: rsyslog
+    state: present
+
+- name: Start and enable rsyslog
+  systemd:
+    name: rsyslog
+    state: started
+    enabled: yes
+
+- name: Configure default rsyslog log settings
+  template:
+    src: rsyslog.d/template.default.conf.j2
+    dest: /etc/rsyslog.d/00-ansible-managed-default.conf
+  when: rsyslog_d_settings_default_enabled
+  notify:
+    - Restart rsyslog service
+
+- name: Configure rsyslog log settings
+  template:
+    src: rsyslog.d/template.conf.j2
+    dest: /etc/rsyslog.d/10-ansible-managed.conf
+  when: rsyslog_d_settings is defined and (rsyslog_d_settings | length > 0)
+  notify:
+    - Restart rsyslog service
